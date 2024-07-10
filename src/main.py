@@ -10,9 +10,13 @@ class Player(pygame.sprite.Sprite):
 
         #create an image of this Sprite
         self.original_image = pygame.image.load('src/assets/ship.png').convert_alpha()
+        self.original_rect = self.original_image.get_rect()
+        new_size = (int(self.original_rect.width * 0.2), int(self.original_rect.height * 0.2))
+        print(new_size)
+        self.original_image = pygame.transform.scale(self.original_image, new_size)
         self.image = self.original_image
         self.rect = self.image.get_rect()
-
+        
         # variables needed for movement and rotations
         self.x = 640
         self.y = 360
@@ -25,10 +29,10 @@ class Player(pygame.sprite.Sprite):
     def controls(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP] or keys[pygame.K_w]:
-            self.move(5)
+            self.move(6)
 
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            self.move(-5)
+            self.move(-6)
 
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.rotate('left')
@@ -43,9 +47,9 @@ class Player(pygame.sprite.Sprite):
 
     def rotate(self, direction):
         if direction == 'left':
-            angle_multiplier = 3
+            angle_multiplier = 4
         else:
-            angle_multiplier = -3
+            angle_multiplier = -4
 
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
@@ -55,15 +59,27 @@ class Player(pygame.sprite.Sprite):
         self.x += move * math.cos(math.radians(self.angle + 90))
         self.y -= move * math.sin(math.radians(self.angle + 90))
         self.rect.center = (round(self.x), round(self.y))
+        self.screen_wrap()
 
     def screen_wrap(self):
-        pass
+        if self.x < -20:
+            self.x = 1299
+
+        if self.x > 1300:
+            self.x = -19
+
+        if self.y < -20:
+            self.y = 739
+
+        if self.y > 740:
+            self.y = -19
 
     def shoot():
         pass
 
     def update(self):
         self.controls()
+        
 
 class Object(pygame.sprite.Sprite):
     def __init__(self, width, height):
