@@ -4,7 +4,7 @@ import sys
 import random
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, width, height):
+    def __init__(self):
         # Calls the parent class constructor
         pygame.sprite.Sprite.__init__(self)
 
@@ -79,37 +79,77 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.controls()
-        
+
 
 class Object(pygame.sprite.Sprite):
-    def __init__(self, width, height):
+    def __init__(self, surface):
         # Calls the parent class constructor
         pygame.sprite.Sprite.__init__(self)
 
-        #create an image of this Sprite
-        self.image = pygame.Surface([width, height])
-        self.image.fill("White")
+        # Screen dimensions
+        self.screen_width = 1280
+        self.screen_height = 720
 
+        # Object size
+        self.size = 50
+        self.image = pygame.Surface([self.size, self.size])
+        self.image.fill('black')  # Fill color white for visibility
+        pygame.draw.circle(self.image, ('white'), (25, 25), 25)  # Draw circle
         self.rect = self.image.get_rect()
 
+        # Generate a random angle from 0 to 360 degrees
+        self.angle = self.rand_angle()
+
+        # Set initial position based on angle
+        self.x, self.y = self.calculate_spawn_position()
+        self.rect.center = (self.x, self.y)
+
+    def rand_angle(self):
+        return random.randint(0, 360)
+
+    def calculate_spawn_position(self):
+        # Calculate spawn position off-screen based on angle
+        angle_rad = math.radians(self.angle)
+        if 0 <= self.angle <= 90:
+            return -self.size, random.randint(-self.size, self.screen_height + self.size)
+        elif 90 < self.angle <= 180:
+            return random.randint(-self.size, self.screen_width + self.size), -self.size
+        elif 180 < self.angle <= 270:
+            return self.screen_width + self.size, random.randint(-self.size, self.screen_height + self.size)
+        else:  # 270 < self.angle <= 360
+            return random.randint(-self.size, self.screen_width + self.size), self.screen_height + self.size
+
     def movement(self):
-        pass
+        # Move object in the direction of its angle
+        x_val = math.cos(math.radians(self.angle))
+        y_val = math.sin(math.radians(self.angle))
+        self.x += x_val * 3
+        self.y += y_val * 3
+        self.rect.center = (round(self.x), round(self.y))
 
     def despawn(self):
-        pass
+        if self.x < -100 or self.x > 1380:
+            self.kill()
+            print('killed')
+        elif self.y < -100 or self.y > 820:
+            self.kill()
+            print('killed')
 
     def update(self):
-        pass
+        self.movement()
+        self.despawn()
 
 pygame.init()
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 FPS = 60
 running = True
+alive = True
 
 player_group = pygame.sprite.GroupSingle()
+objects = pygame.sprite.Group()
 
-player = Player(25,50)
+player = Player()
 player_group.add(player)
 
 while running:
@@ -119,9 +159,23 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        if alive:
+            pass
+        elif event.type == pygame.keydown:
+            alive = True
+
+    if alive:
+        if len(objects) < 6:
+            objects.add(Object(screen))
+            print('added')
+
+
     screen.fill("black")
     player_group.update()
     player_group.draw(screen)
+
+    objects.update()
+    objects.draw(screen)
     
     pygame.display.update()
     
