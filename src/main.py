@@ -83,7 +83,6 @@ class Player(pygame.sprite.Sprite):
 
     def increase_score(self):
         self.score += 1
-        print(self.score)
 
     def update(self):
         self.controls()
@@ -174,9 +173,17 @@ def player_collision():
     else:
         return True
 
+def display_score():
+    score_surface = font.render(f'Score: {player_group.sprite.score}', True, (255,255,255))
+    score_rect = score_surface.get_rect()
+    score_rect.topleft = (10,10)
+    screen.blit(score_surface, score_rect)
+
 pygame.init()
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
+font = pygame.font.Font(None, 48)
+
 FPS = 60
 running = True
 alive = True
@@ -206,6 +213,8 @@ while running:
             player_group.add(Player())
 
         screen.fill("black")
+        display_score()
+
         player_group.update()
         player_group.draw(screen)
 
