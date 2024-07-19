@@ -12,7 +12,6 @@ class Player(pygame.sprite.Sprite):
         self.original_image = pygame.image.load('src/assets/ship.png').convert_alpha()
         self.original_rect = self.original_image.get_rect()
         new_size = (int(self.original_rect.width * 0.2), int(self.original_rect.height * 0.2))
-        print(new_size)
         self.original_image = pygame.transform.scale(self.original_image, new_size)
         self.image = self.original_image
         self.rect = self.image.get_rect()
@@ -24,6 +23,9 @@ class Player(pygame.sprite.Sprite):
 
         # placing the player in the middle of the screen
         self.rect.center = (self.x, self.y)
+
+        # keeping track of time between the shots to limit bullet spam
+        self.last_shot = 300
         
 
     def controls(self):
@@ -40,8 +42,7 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.rotate('right')
 
-        if keys[pygame.K_SPACE]:
-            # make it shoot bullets
+        if keys[pygame.K_SPACE] and pygame.time.get_ticks() - self.last_shot >= 300:
             self.shoot()
 
 
@@ -77,6 +78,7 @@ class Player(pygame.sprite.Sprite):
     def shoot(self):
         bullet = Bullet(self.x, self.y, self.angle)
         bullets.add(bullet)
+        self.last_shot = pygame.time.get_ticks()
 
     def update(self):
         self.controls()
