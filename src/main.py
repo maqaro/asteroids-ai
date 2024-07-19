@@ -74,11 +74,31 @@ class Player(pygame.sprite.Sprite):
         if self.y > 740:
             self.y = -19
 
-    def shoot():
-        pass
+    def shoot(self):
+        bullet = Bullet(self.x, self.y, self.angle)
+        bullets.add(bullet)
 
     def update(self):
         self.controls()
+
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, angle):
+        super().__init__()
+        self.image = pygame.Surface((5, 5))
+        self.image.fill('white')
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.speed = 10
+        self.angle = angle
+
+    def update(self):
+        dx = self.speed * math.cos(math.radians(self.angle + 90))
+        dy = -self.speed * math.sin(math.radians(self.angle + 90))
+        self.rect.x += dx
+        self.rect.y += dy
+        if not screen.get_rect().colliderect(self.rect):
+            self.kill()
 
 
 class Object(pygame.sprite.Sprite):
@@ -130,14 +150,20 @@ class Object(pygame.sprite.Sprite):
     def despawn(self):
         if self.x < -100 or self.x > 1380:
             self.kill()
-            print('killed')
         elif self.y < -100 or self.y > 820:
             self.kill()
-            print('killed')
 
     def update(self):
         self.movement()
         self.despawn()
+
+def player_collision():
+    if player_group and pygame.sprite.spritecollide(player_group.sprite, objects, False):
+        player_group.empty()
+        objects.empty()
+        return False
+    else:
+        return True
 
 pygame.init()
 screen = pygame.display.set_mode((1280,720))
@@ -148,9 +174,7 @@ alive = True
 
 player_group = pygame.sprite.GroupSingle()
 objects = pygame.sprite.Group()
-
-player = Player()
-player_group.add(player)
+bullets = pygame.sprite.Group()
 
 while running:
     clock.tick(FPS)
@@ -161,21 +185,35 @@ while running:
 
         if alive:
             pass
-        elif event.type == pygame.keydown:
-            alive = True
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s and not alive:
+                alive = True
 
     if alive:
         if len(objects) < 6:
             objects.add(Object(screen))
-            print('added')
 
+        if len(player_group) < 1:
+            player_group.add(Player())
 
-    screen.fill("black")
-    player_group.update()
-    player_group.draw(screen)
+        screen.fill("black")
+        player_group.update()
+        player_group.draw(screen)
 
-    objects.update()
-    objects.draw(screen)
+        objects.update()
+        objects.draw(screen)
+
+        bullets.update()
+        bullets.draw(screen)
+
+        for bullet in bullets:
+            if pygame.sprite.spritecollide(bullet, objects, True):
+                bullet.kill()
+
+        alive = player_collision()
+
+    elif not alive:
+        screen.fill("black")
     
     pygame.display.update()
     
