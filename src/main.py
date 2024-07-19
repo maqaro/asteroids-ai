@@ -26,6 +26,7 @@ class Player(pygame.sprite.Sprite):
 
         # keeping track of time between the shots to limit bullet spam
         self.last_shot = 300
+        self.score = 0
         
 
     def controls(self):
@@ -42,7 +43,7 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.rotate('right')
 
-        if keys[pygame.K_SPACE] and pygame.time.get_ticks() - self.last_shot >= 300:
+        if keys[pygame.K_SPACE] and pygame.time.get_ticks() - self.last_shot >= 250:
             self.shoot()
 
 
@@ -80,6 +81,10 @@ class Player(pygame.sprite.Sprite):
         bullets.add(bullet)
         self.last_shot = pygame.time.get_ticks()
 
+    def increase_score(self):
+        self.score += 1
+        print(self.score)
+
     def update(self):
         self.controls()
 
@@ -113,10 +118,10 @@ class Object(pygame.sprite.Sprite):
         self.screen_height = 720
 
         # Object size
-        self.size = 50
+        self.size = 60
         self.image = pygame.Surface([self.size, self.size])
         self.image.fill('black')  # Fill color white for visibility
-        pygame.draw.circle(self.image, ('white'), (25, 25), 25)  # Draw circle
+        pygame.draw.circle(self.image, ('white'), (30, 30), 30)  # Draw circle
         self.rect = self.image.get_rect()
 
         # Generate a random angle from 0 to 360 degrees
@@ -145,8 +150,8 @@ class Object(pygame.sprite.Sprite):
         # Move object in the direction of its angle
         x_val = math.cos(math.radians(self.angle))
         y_val = math.sin(math.radians(self.angle))
-        self.x += x_val * 3
-        self.y += y_val * 3
+        self.x += x_val * 4
+        self.y += y_val * 4
         self.rect.center = (round(self.x), round(self.y))
 
     def despawn(self):
@@ -159,10 +164,12 @@ class Object(pygame.sprite.Sprite):
         self.movement()
         self.despawn()
 
+
 def player_collision():
     if player_group and pygame.sprite.spritecollide(player_group.sprite, objects, False):
         player_group.empty()
         objects.empty()
+        bullets.empty()
         return False
     else:
         return True
@@ -211,6 +218,7 @@ while running:
         for bullet in bullets:
             if pygame.sprite.spritecollide(bullet, objects, True):
                 bullet.kill()
+                player_group.sprite.increase_score()
 
         alive = player_collision()
 
