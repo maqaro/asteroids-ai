@@ -1,7 +1,10 @@
 import math
+import os
+import neat.checkpoint
+import neat.population
 import pygame
-import sys
 import random
+import neat
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
