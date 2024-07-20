@@ -188,55 +188,83 @@ clock = pygame.time.Clock()
 font = pygame.font.Font(None, 48)
 
 FPS = 60
-running = True
-alive = True
 
 player_group = pygame.sprite.GroupSingle()
 objects = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 
-while running:
-    clock.tick(FPS)
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+def eval_genome(genomes, config):
+    for genome_id, genome in genomes:
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        genome.fitness = 0  # Initialize fitness to 0
+        running = True
+        alive = True
 
-        if alive:
-            pass
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_s and not alive:
-                alive = True
+        while running and alive:
+            clock.tick(FPS)
 
-    if alive:
-        if len(objects) < 6:
-            objects.add(Object(screen))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
-        if len(player_group) < 1:
-            player_group.add(Player())
+                if alive:
+                    pass
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_s and not alive:
+                        alive = True
 
-        screen.fill("black")
-        display_score()
+            if alive:
+                if len(objects) < 6:
+                    objects.add(Object(screen))
 
-        player_group.update()
-        player_group.draw(screen)
+                if len(player_group) < 1:
+                    player_group.add(Player())
 
-        objects.update()
-        objects.draw(screen)
+                screen.fill("black")
+                display_score()
 
-        bullets.update()
-        bullets.draw(screen)
+                player_group.update()
+                player_group.draw(screen)
 
-        for bullet in bullets:
-            if pygame.sprite.spritecollide(bullet, objects, True):
-                bullet.kill()
-                player_group.sprite.increase_score()
+                objects.update()
+                objects.draw(screen)
 
-        alive = player_collision()
+                bullets.update()
+                bullets.draw(screen)
 
-    elif not alive:
-        screen.fill("black")
-    
-    pygame.display.update()
-    
-pygame.quit()
+                for bullet in bullets:
+                    if pygame.sprite.spritecollide(bullet, objects, True):
+                        bullet.kill()
+                        player_group.sprite.increase_score()
+
+                alive = player_collision()
+
+            elif not alive:
+                screen.fill("black")
+            
+            pygame.display.update()
+        
+    pygame.quit()
+
+
+
+def run_neat(config_path):
+    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         config_path)
+
+    population = neat.Population(config)
+
+    population.add_reporter(neat.StdOutReporter(True))
+    population.add_reporter(neat.StatisticsReporter)
+
+    population.add_reporter(neat.checkpointer(1))
+
+    winner = population.run(eval_geneome,50)
+
+    print('\nBest genome:\n{!s}'.format(winner))
+
+if __name__ == "__main__":
+    local_directory = os.path.dirname(__file__)
+    config_path = os.path.join(local_directory, "neat_config.txt")
