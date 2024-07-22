@@ -259,12 +259,13 @@ def run_neat(config_path):
     population.add_reporter(neat.StdOutReporter(True))
     population.add_reporter(neat.StatisticsReporter)
 
-    population.add_reporter(neat.checkpointer(1))
+    population.add_reporter(neat.Checkpointer(1))
 
-    winner = population.run(eval_geneome,50)
+    winner = population.run(eval_genome,50)
 
     print('\nBest genome:\n{!s}'.format(winner))
 
 if __name__ == "__main__":
     local_directory = os.path.dirname(__file__)
     config_path = os.path.join(local_directory, "neat_config.txt")
+    run_neat(config_path)
