@@ -162,10 +162,24 @@ class Game:
     def get_state(self):
         player = self.player_group.sprite
         if player:
-            state = [player.x, player.y, player.angle, len(self.objects)]
+            state = [player.x, player.y, player.angle]
+            # Calculate distances to each object
+            distances = []
+            for obj in self.objects:
+                dist = math.hypot(obj.x - player.x, obj.y - player.y)
+                distances.append(dist)
+            
+            # Include distances of the nearest few objects (e.g., 5)
+            distances = sorted(distances)[:5]  # Get the closest 5 distances
+
+            # Pad distances with zero if fewer than 5 objects
+            distances += [0] * (5 - len(distances))
+
+            state += distances
             return np.array(state, dtype=np.float32)
         else:
-            return np.array([0, 0, 0, 0], dtype=np.float32)
+            return np.array([0] * 8, dtype=np.float32)  # Adjust size to match updated state
+
 
     def play_step(self, action, fps=200):
         self.perform_action(action)

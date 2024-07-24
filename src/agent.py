@@ -22,6 +22,7 @@ class LinearQNet(nn.Module):
         x = self.linear2(x)
         return x
 
+
 class QTrainer:
     def __init__(self, model, lr, gamma):
         self.model = model
@@ -63,7 +64,7 @@ class Agent:
         self.epsilon = 0
         self.gamma = 0.9
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = LinearQNet(4, 256, 5)  # Adjust input and output size accordingly
+        self.model = LinearQNet(input_size=8, hidden_size=256, output_size=5)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -97,6 +98,7 @@ class Agent:
             final_move[move] = 1
         return final_move
 
+
 def train():
     record = 0
     agent = Agent()
@@ -122,7 +124,7 @@ def train():
             agent.train_long()
             if score > record:
                 record = score
-            print(f'Game {num_games} | Score: {score} | Record: {record}')
+            print(f'Game {num_games} | Score: {score} | Reward: {reward} ')
             plotter.update(score)
 
         # Check if the game window should be closed
