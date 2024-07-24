@@ -3,7 +3,7 @@ import random
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
-from test import Game
+from game import Game
 from collections import deque
 from plotting import RealTimePlotter
 
